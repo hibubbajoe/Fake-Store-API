@@ -6,6 +6,7 @@ class API {
     /**
      * Static varibles to be used throughout the API class
      */
+    public static $errors = array();
     public static $products = array();
     public static $categories = array(
         'mens clothing',
@@ -20,7 +21,7 @@ class API {
      * Try / Catch query validation through validate functions
      * Setting products array to all products if query is NOT set
      * Setting products array to CATEGORY and or SHOW limit if query IS set
-     * Printing array to user
+     * Printing array or error 
      */
     public static function main(){
         
@@ -30,23 +31,24 @@ class API {
         try{
             !self::validateCategory($category);
         } catch (exception $e) {
-            echo $e->getMessage();
-            exit();
+            $error = $e->getMessage();
+            array_push(self::$errors, $error);
         }
         
         try{
             !self::validateShow($show);
         } catch (exception $e) {
-            echo $e->getMessage();
-            exit();
+            $error = $e->getMessage();
+            array_push(self::$errors, $error);
         }
             
         self::$products = self::getProducts();
         if($category) self::$products = self::getCategory($category);        
         if($show) self::$products = self::getAmount($show);
         
-        $data = json_encode(self::$products, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        echo $data;
+        $data = self::$errors ? self::$errors : self::$products;
+
+        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
     
 
@@ -66,14 +68,13 @@ class API {
      * Returning the new array
      */
     public static function getAmount($show){
-        
-        $randomizedArray = self::$products;
-        
-        shuffle($randomizedArray);
-        
-        array_splice($randomizedArray, $show); 
-        
-        return $randomizedArray;
+
+        $randomizeArray = self::$products;   
+
+        shuffle($randomizeArray);
+        array_splice($randomizeArray, $show); 
+
+        return $randomizeArray;    
     }
 
 
